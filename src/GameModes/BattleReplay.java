@@ -5,7 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class BattleReplay {
-    public static void replayBattle(String fileName) {
+    public static void replayBattle() {
+        String fileName = "C:/Users/proko/Desktop/replay.txt";
+
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String line;
             while ((line = reader.readLine()) != null) {

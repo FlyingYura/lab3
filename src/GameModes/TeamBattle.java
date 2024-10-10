@@ -6,13 +6,12 @@ import droids.HealerDroid;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 import java.util.Scanner;
 
 public class TeamBattle {
     private List<BaseDroid> team1;
     private List<BaseDroid> team2;
-    private StringBuilder battleLog; // Лог бою
+    private StringBuilder battleLog;
 
     public TeamBattle(List<BaseDroid> team1, List<BaseDroid> team2) {
         this.team1 = team1;
@@ -20,49 +19,23 @@ public class TeamBattle {
         this.battleLog = new StringBuilder();
     }
 
-    public void start() {
+    public void start(Scanner scanner) {
         System.out.println("Командний бій почався!");
         battleLog.append("Командний бій почався!\n");
 
-        Random random = new Random();
         while (teamIsAlive(team1) && teamIsAlive(team2)) {
-            // Вибір випадкових дроїдів
             BaseDroid droid1 = selectAliveDroid(team1);
             BaseDroid droid2 = selectAliveDroid(team2);
 
-            // Лікування або атака
-            if (droid1 instanceof HealerDroid) {
-                BaseDroid allyToHeal = selectAllyToHeal(team1);
-                if (allyToHeal != null) {
-                    ((HealerDroid) droid1).heal(allyToHeal);
-                    battleLog.append(droid1.getName()).append(" лікує ").append(allyToHeal.getName()).append(", здоров'я: ").append(allyToHeal.getHealth()).append("\n");
-                } else {
-                    droid1.attack(droid2);
-                    battleLog.append(droid1.getName()).append(" атакує ").append(droid2.getName()).append(", залишилось здоров'я: ").append(droid2.getHealth()).append("\n");
-                }
-            } else {
-                droid1.attack(droid2);
-                battleLog.append(droid1.getName()).append(" атакує ").append(droid2.getName()).append(", залишилось здоров'я: ").append(droid2.getHealth()).append("\n");
+            if (droid1 != null) {
+                chooseTeamAttack(scanner, droid1, droid2);
             }
 
-            if (droid2.isAlive()) {
-                if (droid2 instanceof HealerDroid) {
-                    BaseDroid allyToHeal = selectAllyToHeal(team2);
-                    if (allyToHeal != null) {
-                        ((HealerDroid) droid2).heal(allyToHeal);
-                        battleLog.append(droid2.getName()).append(" лікує ").append(allyToHeal.getName()).append(", здоров'я: ").append(allyToHeal.getHealth()).append("\n");
-                    } else {
-                        droid2.attack(droid1);
-                        battleLog.append(droid2.getName()).append(" атакує ").append(droid1.getName()).append(", залишилось здоров'я: ").append(droid1.getHealth()).append("\n");
-                    }
-                } else {
-                    droid2.attack(droid1);
-                    battleLog.append(droid2.getName()).append(" атакує ").append(droid1.getName()).append(", залишилось здоров'я: ").append(droid1.getHealth()).append("\n");
-                }
+            if (droid2 != null && droid2.isAlive()) {
+                chooseTeamAttack(scanner, droid2, droid1);
             }
         }
 
-        // Визначаємо переможця
         if (teamIsAlive(team1)) {
             System.out.println("Команда 1 перемогла!");
             battleLog.append("Команда 1 перемогла!\n");
@@ -71,13 +44,46 @@ public class TeamBattle {
             battleLog.append("Команда 2 перемогла!\n");
         }
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Введіть назву файлу для збереження командного бою: ");
-        String fileName = scanner.nextLine(); // Користувач вводить назву файлу
-        saveBattleLog(fileName); // Зберегти лог бою у вказаний файл
+        saveBattleLog();
     }
 
-    private void saveBattleLog(String fileName) {
+    private void chooseTeamAttack(Scanner scanner, BaseDroid attacker, BaseDroid opponent) {
+        if (attacker instanceof HealerDroid) {
+            System.out.println(attacker.getName() + " обирає дію: ");
+            System.out.println("1. Лікувати союзника");
+            System.out.println("2. Атакувати противника");
+
+            int choice = scanner.nextInt();
+            if (choice == 1) {
+                BaseDroid allyToHeal = selectAllyToHeal(attacker instanceof HealerDroid ? team1 : team2);
+                if (allyToHeal != null) {
+                    ((HealerDroid) attacker).useSpecialAbility(allyToHeal);
+                    battleLog.append(attacker.getName()).append(" лікує ").append(allyToHeal.getName()).append(", здоров'я: ").append(allyToHeal.getHealth()).append("\n");
+                } else {
+                    System.out.println("Немає союзників для лікування.");
+                }
+            } else if (choice == 2) {
+                attacker.attack(opponent);
+                battleLog.append(attacker.getName()).append(" атакує ").append(opponent.getName()).append(", залишилось здоров'я: ").append(opponent.getHealth()).append("\n");
+            }
+        } else {
+            System.out.println(attacker.getName() + " обирає дію: ");
+            System.out.println("1. Звичайна атака");
+            System.out.println("2. Використати спеціальну здібність");
+
+            int choice = scanner.nextInt();
+            if (choice == 1) {
+                attacker.attack(opponent);
+            } else if (choice == 2) {
+                attacker.useSpecialAbility(opponent);
+            }
+
+            battleLog.append(attacker.getName()).append(" атакує ").append(opponent.getName()).append(", залишилось здоров'я: ").append(opponent.getHealth()).append("\n");
+        }
+    }
+
+    private void saveBattleLog() {
+        String fileName = "C:/Users/proko/Desktop/replay.txt";
         try (FileWriter writer = new FileWriter(fileName)) {
             writer.write(battleLog.toString());
             System.out.println("Лог командного бою збережено у файл: " + fileName);
@@ -86,7 +92,6 @@ public class TeamBattle {
         }
     }
 
-    // Інші методи вибору дроїдів та перевірки команди
     private boolean teamIsAlive(List<BaseDroid> team) {
         return team.stream().anyMatch(BaseDroid::isAlive);
     }

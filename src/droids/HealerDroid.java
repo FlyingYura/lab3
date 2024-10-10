@@ -1,29 +1,23 @@
 package droids;
 
 public class HealerDroid extends BaseDroid {
-    private int healingPower;
-
     public HealerDroid(String name) {
-        super(name, 60, 10);
-        this.healingPower = 15;
-    }
-
-    public void heal(BaseDroid ally) {
-        if (ally.isAlive()) {
-            ally.health += healingPower;
-            System.out.println(name + " heals " + ally.getName() + " for " + healingPower + " health");
-        } else {
-            System.out.println(ally.getName() + " Is already dead, and can't be healed anymore.");
-        }
-    }
-
-    @Override
-    public void attack(BaseDroid opponent) {
-        super.attack(opponent);
+        super(name, 120, 10, 30, 10);
     }
 
     @Override
     public String getDroidType() {
-        return "Healer";
+        return "Healer Droid";
+    }
+
+    @Override
+    public void useSpecialAbility(BaseDroid target) {
+        if (abilityUses > 0) {
+            target.health += this.specialDamage;
+            abilityUses--;
+            System.out.println(name + " лікує " + target.getName() + " на " + specialDamage + " очків здоров'я.");
+        } else {
+            System.out.println(name + " В лікаря більше немає мани, вміння не можна більше використовувати.");
+        }
     }
 }

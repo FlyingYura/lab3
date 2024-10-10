@@ -38,7 +38,7 @@ public class DroidBattleApp {
                     teamBattle(scanner);
                     break;
                 case 5:
-                    replayBattle(scanner);
+                    BattleReplay.replayBattle();
                     break;
                 case 6:
                     return;
@@ -55,7 +55,7 @@ public class DroidBattleApp {
         System.out.println("3. Снайпер");
 
         int choice = scanner.nextInt();
-        scanner.nextLine(); // Пропуск символу переводу рядка
+        scanner.nextLine();
 
         System.out.print("Введіть ім'я дроїда: ");
         String name = scanner.nextLine();
@@ -107,7 +107,7 @@ public class DroidBattleApp {
         BaseDroid droid2 = droids.get(droid2Index);
 
         BattleOneOnOne battle = new BattleOneOnOne(droid1, droid2);
-        battle.start();
+        battle.start(scanner);
     }
 
     private static void teamBattle(Scanner scanner) {
@@ -134,12 +134,6 @@ public class DroidBattleApp {
         }
 
         TeamBattle teamBattle = new TeamBattle(team1, team2);
-        teamBattle.start();
-    }
-
-    private static void replayBattle(Scanner scanner) {
-        System.out.print("Введіть ім'я файлу для відтворення бою: ");
-        String fileName = scanner.next();
-        BattleReplay.replayBattle(fileName);
+        teamBattle.start(scanner);
     }
 }
